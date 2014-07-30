@@ -16,7 +16,6 @@ class PixelRequestTest extends PHPUnit_Framework_TestCase
         $this->request = new PixelRequest();
     }
 
-
     /**
      * @test
      */
@@ -31,7 +30,9 @@ class PixelRequestTest extends PHPUnit_Framework_TestCase
 
     private function createFile($content)
     {
-        $path = sys_get_temp_dir().'/'.time().'-'.rand(0, 10).'-test_request.txt';
+        $dir = sys_get_temp_dir().'/'.time().'-pixel_request_test';
+        @mkdir($dir, 0777, true);
+        $path = $dir.'/file.txt';
 
         file_put_contents($path, $content);
 
