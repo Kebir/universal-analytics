@@ -11,7 +11,7 @@ Add the package to your composer.json:
 ```js
 {
     require: {
-        "kebir/universal-analytics": "1.*"
+        "kebir/universal-analytics": "~2.*"
     }
 }
 ```
@@ -24,13 +24,33 @@ Usage
 use Kebir\UniversalAnalytics\UniversalAnalyticsTracker as Tracker;
 use Kebir\UniversalAnalytics\PixelRequest;
 
-//First we have to create a tracker instance
-$tracker = new Tracker('UA-xxxxxxxx-y', 'visitor_id', new PixelRequest());
+//Create a tracker instance
+$tracker = new Tracker(new PixelRequest());
 
-//The first parameter is the account id in google analytics
-//The second parameter is an identifier for the visitor (you can generate your own)
-//The third parameter is a simple wrapper for curl
+//Set the google analytics account.
+$tracker->setAccount($account);
 
+//Set the client id of the visitor.
+$tracker->setClientId($client_id);
+
+//Set custom dimensions or metrics
+$tracker->setCustomDimension(1, "Member");
+$tracker->setCustomMetric(2, 1);
+
+//You can also set other informations
+$tracker->setCampaignSource("CampaignSource");
+$tracker->setCampaignName("CampaignName");
+$tracker->setCampaignMedium("CampaignMedium");
+$tracker->setCampaignKeyword("CampaignKeyword");
+$tracker->setCampaignContent("CampaignContent");
+$tracker->setGoogleAdwordsId("GoogleAdwordsId");
+$tracker->setGoogleDisplayAdsId("GoogleDisplayAdsId");
+$tracker->setIp("Ip");
+$tracker->setUserAgent("UserAgent");
+$tracker->setUserLanguage("UserLanguage");
+$tracker->setNonInteraction("NonInteraction");
+$tracker->setExperimentId("ExperimentId");
+$tracker->setExperimentVariation("ExperimentVariation");
 
 //To track a pageview
 $tracker->trackPageview('/page');

@@ -2,7 +2,7 @@
 
 namespace Kebir\UniversalAnalytics;
 
-class UniversalAnalyticsTracker implements Tracker, CustomizableInterface
+class UniversalAnalyticsTracker
 {
 
     const PROTOCOL_VERSION = 'v';
@@ -13,10 +13,6 @@ class UniversalAnalyticsTracker implements Tracker, CustomizableInterface
     const HIT_TYPE = 't';
     const CLIENT_ID = 'cid';
     const TRACKER_ID = 'tid';
-
-    const CAMPAIGN_SOURCE = 'cs';
-    const CAMPAIGN_NAME = 'cn';
-    const CAMPAIGN_MEDIUM = 'cm';
 
     const PAGE = 'dp';
 
@@ -43,6 +39,34 @@ class UniversalAnalyticsTracker implements Tracker, CustomizableInterface
     const CUSTOM_DIMENSION = 'cd';
     const CUSTOM_METRIC = 'cm';
 
+    /*
+     |----------------------------------------------
+     | Availables functions
+     |----------------------------------------------
+     | Contains the list of availables fields the
+     | user can set using "magic" functions.
+     |
+     | Examples:
+     |     ->setCampaignSource($source);
+     |     ->setExperimentId($experiment);
+     |
+     */
+    protected $available_parameters = array(
+        "CampaignSource" => "cs",
+        "CampaignName" => "cn",
+        "CampaignMedium" => "cm",
+        "CampaignKeyword" => "ck",
+        "CampaignContent" => "cc",
+        "GoogleAdwordsId" => "gclid",
+        "GoogleDisplayAdsId" => "dclid",
+        "Ip" => "uip",
+        "UserAgent" => "ua",
+        "UserLanguage" => "ul",
+        "NonInteraction" => "ni",
+        "ExperimentId" => "xid",
+        "ExperimentVariation" => "xvar"
+    );
+
     /**
      * The analytics account id.
      *
@@ -65,36 +89,38 @@ class UniversalAnalyticsTracker implements Tracker, CustomizableInterface
     protected $request;
 
     /**
-     * The custom dimensions.
+     * The parameters to send to analytics.
      *
      * @var array
      */
-    protected $custom_dimensions = array();
+    protected $parameters = array();
 
     /**
-     * The custom metrics.
-     *
-     * @var array
-     */
-    protected $custom_metrics = array();
-
-    /**
-     * The campaign informations.
-     *
-     * @var array
-     */
-    protected $campaign_infos = array();
-
-    /**
-     * @param string $account   The analytics account.
-     * @param string $client_id The client id.
      * @param string $request   The pixel "requester".
      */
-    public function __construct($account, $client_id, Request $request)
+    public function __construct(Request $request)
+    {
+        $this->request = $request;
+    }
+
+    /**
+     * Set the account.
+     *
+     * @param string $account
+     */
+    public function setAccount($account)
     {
         $this->account = $account;
+    }
+
+    /**
+     * Set the client id.
+     *
+     * @param string $client_id
+     */
+    public function setClientId($client_id)
+    {
         $this->client_id = $client_id;
-        $this->request = $request;
     }
 
     /**
@@ -105,7 +131,7 @@ class UniversalAnalyticsTracker implements Tracker, CustomizableInterface
      */
     public function setCustomDimension($key, $value)
     {
-        $this->custom_dimensions[static::CUSTOM_DIMENSION.$key] = $value;
+        $this->setParameter(static::CUSTOM_DIMENSION.$key, $value);
     }
 
     /**
@@ -116,37 +142,15 @@ class UniversalAnalyticsTracker implements Tracker, CustomizableInterface
      */
     public function setCustomMetric($key, $value)
     {
-        $this->custom_metrics[static::CUSTOM_METRIC.$key] = $value;
+        $this->setParameter(static::CUSTOM_METRIC.$key, $value);
     }
 
     /**
-     * Set the campaign source.
-     *
-     * @param string $campaign_source The source.
+     * Removes all parameters.
      */
-    public function setCampaignSource($campaign_source)
+    public function clearData()
     {
-        $this->campaign_infos[static::CAMPAIGN_SOURCE] = $campaign_source;
-    }
-
-    /**
-     * Set the campaign name.
-     *
-     * @param string $campaign_name The campaign name.
-     */
-    public function setCampaignName($campaign_name)
-    {
-        $this->campaign_infos[static::CAMPAIGN_NAME] = $campaign_name;
-    }
-
-    /**
-     * Set the campaign medium.
-     *
-     * @param string $campaign_medium The medium.
-     */
-    public function setCampaignMedium($campaign_medium)
-    {
-        $this->campaign_infos[static::CAMPAIGN_MEDIUM] = $campaign_medium;
+        $this->parameters = array();
     }
 
     /**
@@ -215,6 +219,10 @@ class UniversalAnalyticsTracker implements Tracker, CustomizableInterface
      */
     private function track($options)
     {
+        if (!$this->client_id && !$this->account) {
+            return;
+        }
+
         $params = $this->buildRequestParameters($options);
 
         $url = static::ENDPOINTHOST.static::ENDPOINTPATH;
@@ -231,19 +239,22 @@ class UniversalAnalyticsTracker implements Tracker, CustomizableInterface
      */
     private function buildRequestParameters($options)
     {
-        $extra_parameters = array(
-            static::CLIENT_ID => $this->client_id,
-            static::TRACKER_ID => $this->account,
-            static::PROTOCOL_VERSION => 1,
-        );
+        $options[static::CLIENT_ID] = $this->client_id;
+        $options[static::TRACKER_ID] = $this->account;
+        $options[static::PROTOCOL_VERSION] = 1;
 
-        return array_merge(
-            $options,
-            $this->custom_dimensions,
-            $this->custom_metrics,
-            $this->campaign_infos,
-            $extra_parameters
-        );
+        return array_merge($options, $this->parameters);
+    }
+
+    /**
+     * Adds a parameter to the list.
+     *
+     * @param string $name  The name of the parameter.
+     * @param mixed  $value The value to send.
+     */
+    private function setParameter($name, $value)
+    {
+        $this->parameters[$name] = $value;
     }
 
     /**
@@ -266,5 +277,22 @@ class UniversalAnalyticsTracker implements Tracker, CustomizableInterface
             static::ITEM_CODE => $code ? $code : $name,
             static::ITEM_CATEGORY => $category
         );
+    }
+
+    public function __call($name, $arguments)
+    {
+        if (!isset($arguments[0])) {
+            throw new \InvalidArgumentException("Missing argument #1 for method $name");
+        }
+
+        $parameter_name = substr($name, 3);
+        if (strpos($name, "set") !== 0 || !isset($this->available_parameters[$parameter_name])) {
+            throw new MethodDoesNotExistException("Call to undefined method $name");
+        }
+
+
+        $parameter_key = $this->available_parameters[$parameter_name];
+
+        return $this->setParameter($parameter_key, $arguments[0]);
     }
 }

@@ -18,7 +18,7 @@ class UniversalAnalyticsTrackerTest extends PHPUnit_Framework_TestCase
     {
         $this->request = Mockery::mock('Kebir\UniversalAnalytics\Request');
 
-        $this->tracker = new UniversalAnalyticsTracker($this->account, $this->client_id, $this->request);
+        $this->tracker = new UniversalAnalyticsTracker($this->request);
     }
 
     protected function tearDown()
