@@ -15,6 +15,7 @@ class UniversalAnalyticsTracker
     const TRACKER_ID = 'tid';
 
     const PAGE = 'dp';
+    const SCREEN_NAME = 'cd';
 
     const EVENT_CATEGORY = 'ec';
     const EVENT_ACTION = 'ea';
@@ -32,6 +33,7 @@ class UniversalAnalyticsTracker
     const ITEM_CATEGORY = 'iv';
 
     const PAGEVIEW_HIT_TYPE = 'pageview';
+    const SCREENVIEW_HIT_TYPE = 'screenview';
     const EVENT_HIT_TYPE = 'event';
     const TRANSACTION_HIT_TYPE = 'transaction';
     const ITEM_HIT_TYPE = 'item';
@@ -57,14 +59,32 @@ class UniversalAnalyticsTracker
         "CampaignMedium" => "cm",
         "CampaignKeyword" => "ck",
         "CampaignContent" => "cc",
+        "CampaignId" => "ci",
         "GoogleAdwordsId" => "gclid",
         "GoogleDisplayAdsId" => "dclid",
+        "ScreenResolution" => "sr",
+        "ViewportSize" => "vp",
+        "DocumentEncoding" => "de",
+        "ScreenColors" => "sd",
+        "UserLanguage" => "ul",
+        "NonInteractionHit" => "ni",
+        "DocumentLocationUrl" => "dl",
+        "DocumentHostname" => "dh",
+        "DocumentPath" => "dp",
+        "DocumentTitle" => "dt",
+        "ApplicationName" => "an",
+        "ApplicationId" => "aid",
+        "ApplicationVersion" => "av",
+        "ApplicationInstallerId" => "aiid",
         "Ip" => "uip",
         "UserAgent" => "ua",
+        "CountryCode" => "geoid",
         "UserLanguage" => "ul",
         "NonInteraction" => "ni",
         "ExperimentId" => "xid",
-        "ExperimentVariation" => "xvar"
+        "ExperimentVariation" => "xvar",
+        "QueueTime" => "qt",
+        "DocumentReferrer" => "dr"
     );
 
     /**
@@ -163,6 +183,19 @@ class UniversalAnalyticsTracker
         $this->track(array(
             static::PAGE => $page,
             static::HIT_TYPE => static::PAGEVIEW_HIT_TYPE
+        ));
+    }
+    
+    /**
+     * Tracks the screen view into analytics.
+     *
+     * @param string $screen_name The screen name.
+     */
+    public function trackScreenView($screen_name)
+    {
+        $this->track(array(
+            static::SCREEN_NAME => $screen_name,
+            static::HIT_TYPE => static::SCREENVIEW_HIT_TYPE
         ));
     }
 
