@@ -76,6 +76,7 @@ class UniversalAnalyticsTracker
         "ApplicationId" => "aid",
         "ApplicationVersion" => "av",
         "ApplicationInstallerId" => "aiid",
+        "SessionControl" => "sc",
         "Ip" => "uip",
         "UserAgent" => "ua",
         "CountryCode" => "geoid",
